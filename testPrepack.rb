@@ -6,6 +6,9 @@ MB11_PACK = Array[2,5,8]
 # 3 @ $5.95 5 @ $9.95 9 @ $16.99
 CF_PACK = Array[3,5,9]
 
+FIXNUM_MAX = (2**(0.size * 8 -2) -1)
+FIXNUM_MIN = -(2**(0.size * 8 -2))
+
 def testPrepack (nums,packs,total)
   # if the member of nums and packs mismatched
   if nums.count != packs.count
@@ -19,13 +22,23 @@ end
 
 
 TEST_DATA=[ \
+	{total:10,packs:[3,5],numpacks:[0,2]}, \
+	{total:14,packs:[2,5,8],numpacks:[3,0,1]}, \
+	{total:13,packs:[3,5,9],numpacks:[1,2,0]}, \
 	{total:34,packs:[2,5,8,16,20],numpacks:[1,0,0,2,0]}, \
-{total:27,packs:[2,5,8,13],numpacks:[3,0,1,1]} \
+{total:27,packs:[2,5,8,13],numpacks:[3,0,1,1]}, \
+{total:19,packs:[2,5,8],numpacks:[3,1,1]} \
 ]
 def testProduct ()
+	result= true
 	TEST_DATA.each do |test|
-		return iniPrePackNew(test[:packs],test[:total])
+		puts
+		puts "---"
+		result= (iniPrePackNew(test[:packs],test[:total])==test[:numpacks]) && result
+		print "#{test}-#{result}-#{iniPrePackNew(test[:packs],test[:total])}"
+		puts
 	end
+	return result
 end
 
 
@@ -42,25 +55,24 @@ def prePackNew(packs,total,packs_in=[],packs_pop=[])
    if  total==0
     	return true
 	elsif packs.count<1 
-		if packs_pop.count >0
-			packs_pop.reverse!.pop
+		if packs_in.count >0
 			r=packs_in.pop
 			$num_packs[r]-=1
-			if r == packs_pop.min
-				r2=packs_in.pop
-				$num_packs[r2]-=1
-				prePackNew(packs_pop,total+r+r2,packs_in)
-			else
-				return prePackNew(packs_pop,total+r,packs_in)
+			# pop out the value less than r from packs_pop
+			popout=[]
+			packs_pop.reverse.each do |p|
+				if p<r
+					popout.push(packs_pop.pop) 
+				end
 			end
+			return prePackNew(popout,total+r,packs_in,packs_pop)
 		else
-			if packs_pop.count <1
-				$num_packs={}
-				return false
-			end
+			$num_packs={}
+			return false
 		end
 	elsif (total<packs[-1])
-		packs_pop.push(packs.pop)
+		p = packs.pop
+		packs_pop.push(p)
 		return prePackNew(packs,total,packs_in,packs_pop)
 	elsif (total>=packs[-1])
 		if packs_in.nil?
@@ -73,7 +85,6 @@ def prePackNew(packs,total,packs_in=[],packs_pop=[])
 end
 
 def iniPrePackNew (packs,total,packs_in=[],packs_pop=[])
-	num_min=[]
 	num_packs_all=[]
 	result = false
 	packs_itr = packs.dup
@@ -91,10 +102,12 @@ def iniPrePackNew (packs,total,packs_in=[],packs_pop=[])
 		# convert hash to array
 		num_packs_a=[]
 		num_packs_all.each do |n|
-    num_packs_a.push(n.values)
+    		if n.values.reduce(:+)>0
+    			num_packs_a.push(n.values)
+    		end
 		end
-	#print num_packs_all
-	#puts
+	# print num_packs_all
+	# puts
 	if result
 		# calculate the sum and find record correspond to the minimum of the sum
 		return num_packs_a[num_packs_a.map {|i| i.reduce(:+)}.each_with_index.min[1]]
@@ -104,5 +117,5 @@ def iniPrePackNew (packs,total,packs_in=[],packs_pop=[])
 end
 
 
-print "min_packs_num=#{iniPrePackNew([2,5,8,16,20],34)}\n"
-#puts testProduct()
+#print "min_packs_num=#{iniPrePackNew([2,5,8,16,20],34)}\n"
+testProduct()
