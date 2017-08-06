@@ -6,8 +6,6 @@ MB11_PACK = Array[2,5,8]
 # 3 @ $5.95 5 @ $9.95 9 @ $16.99
 CF_PACK = Array[3,5,9]
 
-FIXNUM_MAX = (2**(0.size * 8 -2) -1)
-FIXNUM_MIN = -(2**(0.size * 8 -2))
 
 def testPrepack (nums,packs,total)
   # if the member of nums and packs mismatched
@@ -22,12 +20,12 @@ end
 
 
 TEST_DATA=[ \
-	{total:10,packs:[3,5],numpacks:[0,2]}, \
-	{total:14,packs:[2,5,8],numpacks:[3,0,1]}, \
-	{total:13,packs:[3,5,9],numpacks:[1,2,0]}, \
-	{total:34,packs:[2,5,8,16,20],numpacks:[1,0,0,2,0]}, \
-{total:27,packs:[2,5,8,13],numpacks:[3,0,1,1]}, \
-{total:19,packs:[2,5,8],numpacks:[3,1,1]} \
+	{total:10,packs:[5,3],numpacks:[2,0]}, \
+	{total:14,packs:[8,5,2],numpacks:[1,0,3]}, \
+	{total:13,packs:[9,5,3],numpacks:[0,2,1]}, \
+	{total:34,packs:[20,16,8,5,2],numpacks:[0,2,0,0,1]}, \
+{total:27,packs:[13,8,5,2],numpacks:[1,1,0,3]}, \
+{total:19,packs:[8,5,2],numpacks:[1,1,3]} \
 ]
 def testProduct ()
 	result= true
@@ -62,7 +60,7 @@ def prePackNew(packs,total,packs_in=[],packs_pop=[])
 			popout=[]
 			packs_pop.reverse.each do |p|
 				if p<r
-					popout.push(packs_pop.pop) 
+					popout.unshift(packs_pop.pop) 
 				end
 			end
 			return prePackNew(popout,total+r,packs_in,packs_pop)
@@ -70,17 +68,17 @@ def prePackNew(packs,total,packs_in=[],packs_pop=[])
 			$num_packs={}
 			return false
 		end
-	elsif (total<packs[-1])
-		p = packs.pop
+	elsif (total<packs[0])
+		p = packs.shift
 		packs_pop.push(p)
 		return prePackNew(packs,total,packs_in,packs_pop)
-	elsif (total>=packs[-1])
+	elsif (total>=packs[0])
 		if packs_in.nil?
 			packs_in=[]
 		end
-		packs_in.push(packs[-1])
-		$num_packs[packs[-1]]=($num_packs[packs[-1]].nil?)?1:($num_packs[packs[-1]]+1)
-		return prePackNew(packs,total-packs[-1],packs_in,packs_pop)
+		packs_in.push(packs[0])
+		$num_packs[packs[0]]=($num_packs[packs[0]].nil?)?1:($num_packs[packs[0]]+1)
+		return prePackNew(packs,total-packs[0],packs_in,packs_pop)
 	end
 end
 
@@ -92,12 +90,12 @@ def iniPrePackNew (packs,total,packs_in=[],packs_pop=[])
 		$num_packs={}
 		result= prePackNew(packs_itr,total) || result
 		num_packs_all.push($num_packs)
-		packs_itr.delete_at(-1)
+		packs_itr.shift
 	end
-			# complete the results hash and sort it 
+			# complete the results hash and sort it (desendant)
 		num_packs_all=num_packs_all.collect do |n|
 			packs.each {|p| n.has_key?(p)?0:n[p]=0}
-			n.sort.to_h
+			n.sort{|x,y|y<=>x}.to_h
 		end
 		# convert hash to array
 		num_packs_a=[]
