@@ -25,18 +25,30 @@ TEST_DATA=[ \
 	{total:13,packs:[9,5,3],numpacks:[0,2,1]}, \
 	{total:34,packs:[20,16,8,5,2],numpacks:[0,2,0,0,1]}, \
 {total:27,packs:[13,8,5,2],numpacks:[1,1,0,3]}, \
-{total:19,packs:[8,5,2],numpacks:[1,1,3]} \
+{total:27,packs:[25,16,8,5,2],numpacks: [1, 0, 0, 0, 1]}, \
+{total:19,packs:[8,5,2],numpacks:[1,1,3,]} \
 ]
 def testProduct ()
-	result= true
+	is_passed = true
+	passed = 0
+	error = 0
 	TEST_DATA.each do |test|
-		puts
-		puts "---"
-		result= (iniPrePackNew(test[:packs],test[:total])==test[:numpacks]) && result
-		print "#{test}-#{result}-#{iniPrePackNew(test[:packs],test[:total])}"
-		puts
+
+		r = iniPrePackNew(test[:packs],test[:total])
+		is_passed = (r==test[:numpacks]) && is_passed
+		if !is_passed
+			error+=1
+			puts
+			puts "---"
+			print "Passed: #{is_passed} - Expected: #{test} - ErrorOutput: #{r}"
+			puts
+		else
+			passed+=1
+		end
 	end
-	return result
+	t=TEST_DATA.count
+	puts "Passed: #{passed}/#{t} Error: #{error}/#{t}"
+	return is_passed
 end
 
 
@@ -115,5 +127,5 @@ def iniPrePackNew (packs,total,packs_in=[],packs_pop=[])
 end
 
 
-#print "min_packs_num=#{iniPrePackNew([2,5,8,16,20],34)}\n"
-testProduct()
+#print "min_packs_num=#{iniPrePackNew([25,16,8,5,2],27)}\n"
+puts testProduct()
